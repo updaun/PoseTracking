@@ -1,0 +1,6 @@
+opencv-contrib-python
+mediapipe
+comtypes
+pycaw
+autopy
+win10toast
