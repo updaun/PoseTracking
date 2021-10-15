@@ -5,17 +5,32 @@ import math
 
 class poseDetector():
 
-    def __init__(self, mode=False, upBody = False, smooth = True, detectionCon = 0.5, trackCon = 0.5):
+    def __init__(self,
+                static_image_mode=False,
+                model_complexity=1,
+                smooth_landmarks=True,
+                enable_segmentation=True,
+                smooth_segmentation=True,
+                min_detection_confidence=0.5,
+                min_tracking_confidence=0.5):
 
-        self.mode = mode
-        self.upBody = upBody
-        self.smooth = smooth
-        self.detectionCon = detectionCon
-        self.trackCon = trackCon
+        self.static_image_mode = static_image_mode
+        self.model_complexity = model_complexity
+        self.smooth_landmarks = smooth_landmarks
+        self.enable_segmentation = enable_segmentation
+        self.smooth_segmentation = smooth_segmentation
+        self.min_detection_confidence = min_detection_confidence
+        self.min_tracking_confidence = min_tracking_confidence
     
         self.mpDraw = mp.solutions.drawing_utils
         self.mpPose = mp.solutions.pose
-        self.pose = self.mpPose.Pose(self.mode, self.upBody, self.smooth, self.detectionCon, self.trackCon)
+        self.pose = self.mpPose.Pose(self.static_image_mode,
+                                    self.model_complexity,
+                                    self.smooth_landmarks,
+                                    self.enable_segmentation,
+                                    self.smooth_segmentation,
+                                    self.min_detection_confidence,
+                                    self.min_tracking_confidence)
 
     def findPose(self, img, draw = True):
 
