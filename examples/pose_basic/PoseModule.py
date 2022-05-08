@@ -50,7 +50,7 @@ class poseDetector():
                 h, w, c = img.shape
                 #print(id, lm)
                 cx, cy = int(lm.x*w), int(lm.y*h)
-                self.lmList.append([id,cx,cy])
+                self.lmList.append([id,cx,cy,lm.z])
                 if draw:
                     cv2.circle(img,(cx,cy), 8, (255,0,0), cv2.FILLED)
         return self.lmList
@@ -58,9 +58,9 @@ class poseDetector():
     def findAngle(self, img, p1, p2, p3, draw=True):
 
         # 랜드마크 좌표 얻기
-        x1, y1 = self.lmList[p1][1:]
-        x2, y2 = self.lmList[p2][1:]
-        x3, y3 = self.lmList[p3][1:]
+        x1, y1 = self.lmList[p1][1:3]
+        x2, y2 = self.lmList[p2][1:3]
+        x3, y3 = self.lmList[p3][1:3]
 
         # 각도 계산
         radian = math.atan2(y3-y2,x3-x2)-math.atan2(y1-y2,x1-x2)
@@ -86,8 +86,8 @@ class poseDetector():
     def findAngleTwoPoints(self, img, p1, p2, draw=True):
         
         # 랜드마크 좌표 얻기
-        x1, y1 = self.lmList[p1][1:]
-        x2, y2 = self.lmList[p2][1:]
+        x1, y1 = self.lmList[p1][1:3]
+        x2, y2 = self.lmList[p2][1:3]
 
         # 각도 계산
         radian = math.atan2(y2-y1,x2-x1)
@@ -103,8 +103,8 @@ class poseDetector():
         return angle
 
     def findDistance(self, img, p1, p2, draw=True, r=15, t=3):
-        x1, y1 = self.lmList[p1][1:]
-        x2, y2 = self.lmList[p2][1:]
+        x1, y1 = self.lmList[p1][1:3]
+        x2, y2 = self.lmList[p2][1:3]
         cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
         length = math.hypot(x2-x1, y2-y1)
 
@@ -131,8 +131,8 @@ class poseDetector():
         return length
 
     def findCenterPoint(self, img, p1, p2, draw=True, r=15, t=3):
-        x1, y1 = self.lmList[p1][1:]
-        x2, y2 = self.lmList[p2][1:]
+        x1, y1 = self.lmList[p1][1:3]
+        x2, y2 = self.lmList[p2][1:3]
         cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
         
         if draw:
