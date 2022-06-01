@@ -37,14 +37,21 @@ def loop_through_people(frame, keypoints_with_scores, edges, confidence_threshol
     for person in keypoints_with_scores:
         # draw_connections(frame, person, edges, confidence_threshold)
         # draw_keypoints(frame, person, confidence_threshold)
-        make_blur(frame, person, confidence_threshold)
+        frame = make_blur(frame, person, confidence_threshold)
+    
+    return frame
         
 
 def make_blur(frame, keypoints, confidence_threshold):
     y, x, c = frame.shape
+    mask_shape = (y, x, 1)
+    mask = np.full(mask_shape, 0, dtype=np.uint8)
+    temp_img = frame.copy()
     shaped = np.squeeze(np.multiply(keypoints, [y,x,1]))
-    target = [7, 8]
+    # target = [7, 8]
+    target = range(17)
     padding = 0.05
+    ksize = 30 
     # x_min, y_min = int(np.min(shaped[:,1]*(1-padding))), int(np.min(shaped[:,0]*(1-padding)))
     # x_max, y_max = int(np.max(shaped[:,1]*(1+padding))), int(np.max(shaped[:,0]*(1+padding)))
     # x_min, y_min = x,y
@@ -75,11 +82,16 @@ def make_blur(frame, keypoints, confidence_threshold):
                     ky = int(ky)
 
                     blur_img = frame[ky-offset:ky+offset, kx-offset:kx+offset].copy()
-                    blur_img = cv2.resize(blur_img, dsize=None, fx=0.10, fy=0.10, interpolation=cv2.INTER_NEAREST)
-                    blur_img = cv2.resize(blur_img, dsize=(2*offset, 2*offset), interpolation=cv2.INTER_NEAREST)
+                    # blur_img = cv2.resize(blur_img, dsize=None, fx=0.10, fy=0.10, interpolation=cv2.INTER_NEAREST)
+                    # blur_img = cv2.resize(blur_img, dsize=(2*offset, 2*offset), interpolation=cv2.INTER_NEAREST)
 
-                    frame[ky-offset:ky+offset, kx-offset:kx+offset] = blur_img
-                    cv2.circle(frame, (int(kx), int(ky)), 6, (0,255,0), -1)
+                    temp_img[ky-offset:ky+offset, kx-offset:kx+offset] = cv2.blur(blur_img, (ksize,ksize))
+                    mask = cv2.circle(mask, (int(kx), int(ky)), int(offset), (255), -1)
+                    mask_inv = cv2.bitwise_not(mask)
+                    img_bg = cv2.bitwise_and(frame, frame, mask=mask_inv)
+                    img_fg = cv2.bitwise_and(temp_img, temp_img, mask=mask)
+                    frame = cv2.add(img_bg, img_fg)
+    return frame
 
 
 def draw_keypoints(frame, keypoints, confidence_threshold):
@@ -138,7 +150,7 @@ while cap.isOpened():
     keypoints_with_scores = results['output_0'].numpy()[:,:,:51].reshape((6,17,3))
     
     # Render keypoints 
-    loop_through_people(frame, keypoints_with_scores, EDGES, 0.1)
+    frame = loop_through_people(frame, keypoints_with_scores, EDGES, 0.1)
     
     cv2.imshow('Movenet Multipose', frame)
     
