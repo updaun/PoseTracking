@@ -1,3 +1,5 @@
+from operator import length_hint
+from tkinter import W
 import tensorflow as tf
 import tensorflow_hub as hub
 import cv2
@@ -52,6 +54,8 @@ def make_blur(frame, keypoints, confidence_threshold):
     target = range(17)
     padding = 0.05
     ksize = 30 
+
+    
     # x_min, y_min = int(np.min(shaped[:,1]*(1-padding))), int(np.min(shaped[:,0]*(1-padding)))
     # x_max, y_max = int(np.max(shaped[:,1]*(1+padding))), int(np.max(shaped[:,0]*(1+padding)))
     # x_min, y_min = x,y
@@ -74,8 +78,11 @@ def make_blur(frame, keypoints, confidence_threshold):
 
             # frame[y_min:y_max, x_min:x_max] = blur_img
         if kp_conf > 0.5:
-            if idx in target:    
-                offset = 20
+            if idx in target:
+                lmList_5_ky, lmList_5_kx, _ = shaped[5]
+                lmList_6_ky, lmList_6_kx, _ = shaped[6]
+                length = int((lmList_6_ky-lmList_5_ky)**2+(lmList_6_kx-lmList_5_kx)**2)**0.5        
+                offset = int(length)
                 if offset<=ky<=y-offset and offset<=kx<=x-offset:
 
                     kx = int(kx)
@@ -84,13 +91,13 @@ def make_blur(frame, keypoints, confidence_threshold):
                     blur_img = frame[ky-offset:ky+offset, kx-offset:kx+offset].copy()
                     # blur_img = cv2.resize(blur_img, dsize=None, fx=0.10, fy=0.10, interpolation=cv2.INTER_NEAREST)
                     # blur_img = cv2.resize(blur_img, dsize=(2*offset, 2*offset), interpolation=cv2.INTER_NEAREST)
-
-                    temp_img[ky-offset:ky+offset, kx-offset:kx+offset] = cv2.blur(blur_img, (ksize,ksize))
-                    mask = cv2.circle(mask, (int(kx), int(ky)), int(offset), (255), -1)
-                    mask_inv = cv2.bitwise_not(mask)
-                    img_bg = cv2.bitwise_and(frame, frame, mask=mask_inv)
-                    img_fg = cv2.bitwise_and(temp_img, temp_img, mask=mask)
-                    frame = cv2.add(img_bg, img_fg)
+                    if len(blur_img) != 0:    
+                        temp_img[ky-offset:ky+offset, kx-offset:kx+offset] = cv2.blur(blur_img, (ksize,ksize))
+                        mask = cv2.circle(mask, (int(kx), int(ky)), int(offset), (255), -1)
+                        mask_inv = cv2.bitwise_not(mask)
+                        img_bg = cv2.bitwise_and(frame, frame, mask=mask_inv)
+                        img_fg = cv2.bitwise_and(temp_img, temp_img, mask=mask)
+                        frame = cv2.add(img_bg, img_fg)
     return frame
 
 
